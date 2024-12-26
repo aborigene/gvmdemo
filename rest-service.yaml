@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Secret
 metadata:
-  name: otel_info
+  name: otel-info
 type: Opaque
 data:
   otel_endpoint: xxx  # base64 encoded value of 'endpoint'
@@ -49,14 +49,14 @@ spec:
           env:
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
             valueFrom:
-            secretKeyRef:
-              name: otel_info
-              key: otel_endpoint
+              secretKeyRe   f:
+                name: otel-info
+                key: otel_endpoint
           - name: OTEL_EXPORTER_OTLP_HEADERS
             valueFrom:
-            secretKeyRef:
-              name: otel_info
-              key: otel_auth_header
+              secretKeyRef:
+                name: otel-info
+                key: otel_auth_header
           - name: DT_RELEASE_VERSION
             value: "v1.2"
           
