@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: otel_info
+type: Opaque
+data:
+  otel_endpoint: xxx  # base64 encoded value of 'endpoint'
+  otel_auth_header: yyy      # base64 encoded value of 'full auth header'
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: rest-service
+    app.kubernetes.io/name: rest-service
+    app.kubernetes.io/version: latest
+    app.kubernetes.io/component: service
+    app.kubernetes.io/part-of: opentelemetry-demo
+    app.kubernetes.io/managed-by: manifests
+    app.kubernetes.io/created-by: admin
+    some: merda
+  name: rest-service
+  annotations:
+    oneagent.dynatrace.com/inject: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rest-service
+  template:
+    metadata:
+      labels:
+        app: rest-service
+      annotations:
+        kuberentes_deployment: "rest-service"
+    spec:
+      nodeSelector:
+        arch: arm64
+      serviceAccountName: simple-rest
+      containers:
+        - name: rest-service
+          image: igoroschsimoes/graalvm-springboot-app:v1arm
+          imagePullPolicy: Always
+          resources: {}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            valueFrom:
+            secretKeyRef:
+              name: otel_info
+              key: otel_endpoint
+          - name: OTEL_EXPORTER_OTLP_HEADERS
+            valueFrom:
+            secretKeyRef:
+              name: otel_info
+              key: otel_auth_header
+          - name: DT_RELEASE_VERSION
+            value: "v1.2"
+          
